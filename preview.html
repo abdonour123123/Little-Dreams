@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Little Dreams — 3D Circular Lookbook Hero</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    h1, h2, .font-serif {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+
+    .stage-perspective {
+      perspective: 1200px;
+      perspective-origin: 50% 50%;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .theme-transition {
+      transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes floatSlight {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-float {
+      animation: floatSlight 5s ease-in-out infinite;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 antialiased">
+
+  <div id="app" class="min-h-screen w-full flex flex-col relative overflow-x-hidden theme-transition">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header id="navbar" class="w-full h-16 px-6 sm:px-10 flex items-center justify-between text-white select-none z-50 shadow-md relative theme-transition flex-shrink-0">
+      <div class="flex items-center gap-6">
+        <button id="btn-back" aria-label="Back" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/15 transition-all text-white/90 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-2 group cursor-pointer" onclick="resetToFirstLook()">
+          <div class="flex flex-col leading-none">
+            <div class="flex items-center gap-1.5 font-bold tracking-tight text-xl font-serif">
+              <span>Little</span>
+              <svg class="w-3.5 h-3.5 fill-amber-300 drop-shadow-sm group-hover:rotate-45 transition-transform duration-300" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+            <span class="font-bold tracking-tight text-xl font-serif -mt-1">Dreams</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
+        <a href="#collections" class="text-white/80 hover:text-white transition-colors py-1 hover:border-b-2 hover:border-white/50">Collections</a>
+        <a href="#try-the-look" class="text-white font-semibold flex items-center gap-1.5 py-1 border-b-2 border-white">
+          <span>Try the Look</span>
+          <span id="nav-mode-pill" class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider transition-colors duration-500 shadow-sm">
+            3D Orbit
+          </span>
+        </a>
+        <a href="#contact" class="text-white/80 hover:text-white transition-colors py-1 hover:border-b-2 hover:border-white/50">Contact</a>
+        <a href="#account" class="text-white/80 hover:text-white transition-colors py-1 hover:border-b-2 hover:border-white/50">My Account</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <div id="gender-pill" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold border border-white/20 theme-transition">
+          <span id="gender-indicator-dot" class="w-2 h-2 rounded-full animate-ping bg-pink-400"></span>
+          <span id="gender-pill-text">Studio Edition (2K Detail)</span>
+        </div>
+
+        <button id="bag-btn" onclick="openCartToast()" aria-label="Shopping Bag" class="relative p-2 rounded-full hover:bg-white/15 transition-all group">
+          <svg class="w-6 h-6 text-white group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span id="cart-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg animate-bounce">
+            0
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN HERO LAYOUT (Fixed height row on desktop) -->
+    <main class="flex-1 w-full flex flex-col lg:flex-row relative z-10 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
+
+      <!-- BACKGROUND WHIMSICAL DOODLES & AMBIENT GLOW -->
+      <div id="doodle-layer" class="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
+        <div id="ambient-glow" class="absolute w-[650px] h-[650px] rounded-full filter blur-[100px] opacity-40 transition-all duration-1000 top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2"></div>
+
+        <svg id="svg-doodles" class="w-full h-full absolute inset-0 opacity-80" xmlns="http://www.w3.org/2000/svg">
+          <g class="animate-float" style="transform: translate(52vw, 6vh) scale(0.95);">
+            <path id="cloud-tr" d="M 20 60 Q 20 35 45 35 Q 55 15 85 15 Q 115 15 125 35 Q 155 35 160 60 Q 165 75 145 78 L 35 78 Q 18 75 20 60 Z"
+              fill="none" stroke="#d9206e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+            <path id="cloud-tr-inner" d="M 38 65 Q 40 48 58 46" fill="none" stroke="#d9206e" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+          </g>
+
+          <g style="transform: translate(14vw, 22vh) scale(0.72);">
+            <path id="cloud-ml" d="M 15 50 Q 15 28 36 28 Q 45 12 70 12 Q 95 12 105 28 Q 130 28 135 50 Q 140 64 120 66 L 30 66 Q 14 64 15 50 Z"
+              fill="none" stroke="#d9206e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7" />
+          </g>
+
+          <g style="transform: translate(44vw, 36vh);">
+            <path id="star-1" d="M 12 2 L 15 9 L 22 10 L 17 15 L 18 22 L 12 18 L 6 22 L 7 15 L 2 10 L 9 9 Z"
+              fill="none" stroke="#d9206e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.75" />
+          </g>
+
+          <g style="transform: translate(22vw, 56vh) scale(0.85);">
+            <path id="star-2" d="M 12 2 L 15 9 L 22 10 L 17 15 L 18 22 L 12 18 L 6 22 L 7 15 L 2 10 L 9 9 Z"
+              fill="none" stroke="#d9206e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.65" />
+          </g>
+
+          <g style="transform: translate(40vw, 20vh);">
+            <line id="sparkle-1" x1="0" y1="18" x2="14" y2="4" stroke="#d9206e" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+            <line id="sparkle-2" x1="12" y1="24" x2="28" y2="12" stroke="#d9206e" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+            <line id="sparkle-3" x1="22" y1="32" x2="38" y2="24" stroke="#d9206e" stroke-width="2.5" stroke-linecap="round" opacity="0.6" />
+          </g>
+
+          <g id="boy-airplane" class="hidden transition-all duration-700" style="transform: translate(9vw, 16vh) scale(0.9);">
+            <path d="M 5 25 L 45 5 L 25 45 L 20 28 Z M 45 5 L 20 28" fill="none" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+            <path d="M 5 25 Q -10 35 -15 50" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" opacity="0.6" />
+          </g>
+
+          <g id="girl-butterfly" class="transition-all duration-700" style="transform: translate(9vw, 16vh) scale(0.9);">
+            <path d="M 20 20 Q 5 5 10 25 Q 15 32 20 22 Q 25 32 30 25 Q 35 5 20 20 Z" fill="none" stroke="#f472b6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- LEFT SECTION: 3D HERO STAGE & CONTROLS -->
+      <section class="flex-1 flex flex-col justify-between relative min-h-[600px] lg:min-h-0 lg:h-full overflow-hidden z-10">
+
+        <!-- Top Headline & Description -->
+        <div class="pt-4 sm:pt-6 lg:pt-8 px-6 sm:px-12 max-w-xl z-20 flex-shrink-0">
+          <h1 id="hero-headline" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight theme-transition font-serif leading-tight">
+            Graceful Movement. 2K Studio Edit.
+          </h1>
+          <p id="hero-subhead" class="mt-2 text-sm sm:text-base lg:text-lg font-medium theme-transition max-w-md">
+            Chic sherpa-trimmed shacket paired with tailored faux-leather shorts and classic ballerina flats.
+          </p>
+        </div>
+
+        <!-- 3D PERSPECTIVE CYLINDRICAL CAROUSEL -->
+        <div id="stage-container" class="stage-perspective relative w-full flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing min-h-[380px] lg:min-h-[440px]">
+          <div id="ground-shadow" class="absolute bottom-4 sm:bottom-6 w-[500px] sm:w-[650px] h-[140px] sm:h-[160px] rounded-[100%] opacity-60 filter blur-xl pointer-events-none theme-transition"></div>
+
+          <div id="carousel-turntable" class="preserve-3d relative w-full h-[420px] flex items-center justify-center transition-transform duration-700 ease-out"></div>
+        </div>
+
+        <!-- BOTTOM CONTROLS & CONTINUOUS PROGRESS BAR -->
+        <div class="w-full px-6 sm:px-12 py-3 sm:py-4 flex flex-row items-center justify-between gap-4 z-30 select-none flex-shrink-0">
+          <div id="pagination-strip" class="flex items-center gap-3 sm:gap-6 flex-wrap"></div>
+
+          <div class="flex-1 max-w-[200px] sm:max-w-xs mx-2 sm:mx-4 hidden sm:block">
+            <div class="w-full h-1.5 bg-black/10 rounded-full overflow-hidden relative">
+              <div id="progress-bar" class="h-full rounded-full transition-all duration-100 ease-linear w-0"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <button onclick="prevLook()" aria-label="Previous Look" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-black/15 flex items-center justify-center text-slate-700 hover:text-white transition-all duration-200" id="btn-prev">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button id="btn-toggle-play" onclick="togglePlay()" aria-label="Toggle Auto-Play" class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-black/15 flex items-center gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-200 shadow-sm">
+              <svg id="play-icon-pause" class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+              <svg id="play-icon-play" class="w-3.5 h-3.5 fill-current hidden" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span id="play-label" class="hidden sm:inline">Auto-spinning</span>
+            </button>
+
+            <button onclick="nextLook()" aria-label="Next Look" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-black/15 flex items-center justify-center text-slate-700 hover:text-white transition-all duration-200" id="btn-next">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT SIDEBAR: "IN THIS LOOK" -->
+      <aside class="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:h-full lg:overflow-y-auto bg-white/95 backdrop-blur-md border-t lg:border-t-0 lg:border-l border-black/5 shadow-2xl flex flex-col justify-between p-6 sm:p-8 z-30 select-none theme-transition">
+        <div>
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-800 font-serif">In this look</h2>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="sidebar-accent-dot" class="inline-block w-2 h-2 rounded-full bg-pink-500 theme-transition"></span>
+                <span id="sidebar-look-tag" class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Look 01 • The Ballet Studio Edit
+                </span>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <svg id="crown-doodle" class="w-14 h-10 theme-transition" viewBox="0 0 60 45" fill="none" stroke="#d9206e" stroke-width="2.4">
+                <path d="M 5 35 L 12 15 L 25 24 L 30 10 L 35 24 L 48 15 L 55 35 Z" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="12" cy="12" r="2" fill="#d9206e" id="crown-dot-1" />
+                <circle cx="30" cy="7" r="2" fill="#d9206e" id="crown-dot-2" />
+                <circle cx="48" cy="12" r="2" fill="#d9206e" id="crown-dot-3" />
+              </svg>
+              <div class="flex items-center gap-1 -mt-1 font-serif font-black text-xs tracking-widest text-slate-800">
+                <span>NEW</span>
+                <svg id="heart-doodle" class="w-3.5 h-3.5 theme-transition" viewBox="0 0 24 24" fill="none" stroke="#d9206e" stroke-width="2">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div id="product-list" class="mt-6 space-y-3.5"></div>
+        </div>
+
+        <div class="pt-5 border-t border-slate-200/70 mt-4">
+          <div class="flex items-baseline justify-between mb-1">
+            <div>
+              <h4 class="text-sm font-bold text-slate-800">Complete the look</h4>
+              <p class="text-xs font-semibold text-emerald-600">Bundle all 3 and save 10%</p>
+            </div>
+            <div class="text-right">
+              <span id="bundle-orig-price" class="text-xs text-slate-400 line-through mr-2">$367.00</span>
+              <span id="bundle-final-price" class="text-lg font-extrabold text-slate-900">$330.30</span>
+            </div>
+          </div>
+
+          <button id="btn-add-bundle" onclick="addFullLookToBag()" class="mt-3.5 w-full py-3.5 px-6 rounded-xl text-white font-bold text-sm tracking-wide flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl active:scale-[0.98] group">
+            <span>Add full look to bag</span>
+            <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+
+          <div class="mt-2.5 flex items-center justify-center gap-4 text-[11px] text-slate-400 font-medium">
+            <span class="flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Free 30-Day Returns
+            </span>
+            <span>•</span>
+            <span>Free Express Shipping</span>
+          </div>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- 3D PIECE INSPECTION MODAL (FRONT & BACK 360° FLIP) -->
+    <div id="item-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md">
+      <div class="absolute inset-0" onclick="closeItemInspector()"></div>
+
+      <div class="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]">
+        <button onclick="closeItemInspector()" aria-label="Close" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Left 3D Flip Card -->
+        <div class="w-full md:w-1/2 p-6 sm:p-8 flex flex-col items-center justify-between bg-gradient-to-br from-slate-50 via-slate-100/60 to-slate-200/50 border-b md:border-b-0 md:border-r border-slate-100 select-none">
+          <div class="w-full flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">
+              3D Piece Inspector • 2K Detail
+            </span>
+            <div class="flex items-center gap-1 bg-white p-1 rounded-full shadow-sm border border-slate-200">
+              <button id="modal-tab-front" onclick="flipModalCard(false)" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white shadow">
+                Front View
+              </button>
+              <button id="modal-tab-back" onclick="flipModalCard(true)" class="px-3 py-1 rounded-full text-xs font-bold text-slate-500 hover:text-slate-900">
+                Back View
+              </button>
+            </div>
+          </div>
+
+          <div class="relative w-full max-w-[320px] h-[320px] sm:h-[350px] flex items-center justify-center cursor-pointer my-2" onclick="toggleModalFlip()">
+            <div id="modal-flip-inner" class="preserve-3d relative w-full h-full rounded-2xl transition-transform duration-700 ease-out shadow-lg">
+              
+              <!-- FRONT FACE -->
+              <div id="modal-face-front" class="backface-hidden absolute inset-0 w-full h-full rounded-2xl bg-white p-4 flex flex-col items-center justify-center border border-slate-200 shadow-md">
+                <span class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider">
+                  Front
+                </span>
+                <div id="modal-img-front" class="w-full h-48 sm:h-56 flex items-center justify-center overflow-hidden rounded-xl"></div>
+                <div class="mt-3 w-full flex items-center justify-around text-[11px] font-semibold text-slate-500 bg-slate-50 py-2 rounded-xl border border-slate-100">
+                  <span id="modal-badge-f1" class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Front Silhouette</span>
+                  <span>•</span>
+                  <span id="modal-badge-f2">Soft Texture</span>
+                </div>
+              </div>
+
+              <!-- BACK FACE -->
+              <div id="modal-face-back" class="backface-hidden absolute inset-0 w-full h-full rounded-2xl bg-white p-4 flex flex-col items-center justify-center border border-slate-200 shadow-md" style="transform: rotateY(180deg);">
+                <span class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider">
+                  Back
+                </span>
+                <div id="modal-img-back" class="w-full h-48 sm:h-56 flex items-center justify-center overflow-hidden rounded-xl"></div>
+                <div class="mt-3 w-full flex items-center justify-around text-[11px] font-semibold text-slate-500 bg-slate-50 py-2 rounded-xl border border-slate-100">
+                  <span id="modal-badge-b1" class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>Back Tailoring</span>
+                  <span>•</span>
+                  <span id="modal-badge-b2">Elastic Waistband</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <button onclick="toggleModalFlip()" class="mt-2 text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm transition-all group">
+            <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span id="modal-flip-btn-label">Flip to View Back (Click to Rotate)</span>
+          </button>
+        </div>
+
+        <!-- Right Details -->
+        <div class="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold tracking-widest text-slate-400 uppercase">LITTLE DREAMS</span>
+              <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">In Stock • 2K Quality</span>
+            </div>
+
+            <h2 id="modal-title" class="text-2xl font-extrabold text-slate-900 font-serif mt-1">Product Title</h2>
+            <div class="flex items-baseline gap-3 mt-2">
+              <span id="modal-price" class="text-2xl font-black text-slate-900">$0.00</span>
+              <span class="text-xs text-slate-400 font-medium">Free Express Shipping & Returns</span>
+            </div>
+
+            <p id="modal-desc" class="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
+
+            <div class="mt-5 grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span class="font-bold text-slate-800 block mb-1">Front Details</span>
+                <p id="modal-detail-front" class="text-slate-500 leading-snug"></p>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span class="font-bold text-slate-800 block mb-1">Back Details</span>
+                <p id="modal-detail-back" class="text-slate-500 leading-snug"></p>
+              </div>
+            </div>
+
+            <!-- Size Selector -->
+            <div class="mt-5">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
+                <span>Select Size</span>
+                <span class="text-slate-400 font-semibold cursor-pointer">Size Guide</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="flex-1 py-2 text-xs font-bold rounded-xl border bg-white border-slate-200 hover:border-slate-300">4Y</button>
+                <button class="flex-1 py-2 text-xs font-bold rounded-xl border bg-slate-900 text-white border-slate-900 shadow-sm">6Y</button>
+                <button class="flex-1 py-2 text-xs font-bold rounded-xl border bg-white border-slate-200 hover:border-slate-300">8Y</button>
+                <button class="flex-1 py-2 text-xs font-bold rounded-xl border bg-white border-slate-200 hover:border-slate-300">10Y</button>
+                <button class="flex-1 py-2 text-xs font-bold rounded-xl border bg-white border-slate-200 hover:border-slate-300">12Y</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6 mt-6 border-t border-slate-100">
+            <button id="modal-add-btn" onclick="addModalItemToBag()" class="w-full py-4 rounded-xl text-white font-bold text-sm tracking-wide flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl active:scale-[0.98]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span id="modal-add-label">Add to Bag</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOATING TOAST -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3.5 rounded-2xl bg-slate-900/90 text-white backdrop-blur-md shadow-2xl flex items-center gap-3 text-sm font-semibold z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-4">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+      <span id="toast-text">Item added to bag!</span>
+    </div>
+
+  </div>
+
+  <script>
+    const LOOKS = [
+      {
+        id: "01",
+        title: "The Ballet Studio Edit",
+        gender: "girl",
+        theme: {
+          bgGradient: "linear-gradient(135deg, #fdf2f7 0%, #fad8e7 50%, #f7c7db 100%)",
+          headerBg: "#6d1338",
+          textColor: "#570c29",
+          taglineColor: "#8c2850",
+          doodleColor: "#d9206e",
+          pedestalTop: "#f5d0df",
+          pedestalBottom: "#e8b8cb",
+          primaryColor: "#75153c",
+          secondaryColor: "#d9206e",
+          buttonBg: "#6d1338",
+          glow: "rgba(217, 32, 110, 0.28)",
+          pillBg: "bg-pink-300 text-rose-950"
+        },
+        model: {
+          name: "Grace",
+          headline: "Graceful Movement. 2K Studio Edit.",
+          subhead: "Chic sherpa-trimmed shacket paired with tailored faux-leather shorts and classic ballerina flats.",
+          avatarType: "ballet-girl-photo",
+          image: "ballet-girl-look.jpg",
+          hotspots: [
+            { id: 1, top: "35%", left: "45%", label: "Vanilla Sherpa Trim Shacket" },
+            { id: 2, top: "54%", left: "42%", label: "Onyx Vegan Leather Shorts" },
+            { id: 3, top: "88%", left: "43%", label: "Black Ballerina Cloud Flats" }
+          ]
+        },
+        items: [
+          {
+            num: 1,
+            brand: "LITTLE DREAMS",
+            name: "Vanilla Sherpa Trim Shacket",
+            price: 149.00,
+            badge: "Plush Sherpa",
+            description: "A cozy cropped chore jacket featuring dual sherpa fleece flap pockets, spread sherpa collar, horn buttons, and fleece sleeve cuff trims for graceful warmth.",
+            frontBadge1: "Sherpa Flap Pockets",
+            frontBadge2: "Horn Buttons",
+            frontDesc: "Dual plush sherpa chest pockets, notched fleece lapel collar, and 4-button closure with sherpa hem border.",
+            backBadge1: "Fleece Back Yoke",
+            backBadge2: "Contoured Drapes",
+            backDesc: "Clean horizontal shoulder yoke with sherpa collar reverse drape and reinforced side seams.",
+            img: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80",
+            backImg: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=400&q=80"
+          },
+          {
+            num: 2,
+            brand: "LITTLE DREAMS",
+            name: "Onyx Vegan Leather Shorts",
+            price: 119.00,
+            badge: "Vegan Leather",
+            description: "Sophisticated tailored silhouette with a comfortable elasticated waistband, relaxed Bermuda leg profile, and buttery soft water-resistant vegan leather.",
+            frontBadge1: "Pleated Front",
+            frontBadge2: "Slanted Pockets",
+            frontDesc: "Smooth flat-front finish with subtle front darts, deep side slash pockets, and wide leg hems.",
+            backBadge1: "Elastic Gather",
+            backBadge2: "Welt Pocket Accents",
+            backDesc: "Smocked comfort elastic across the back waistband with decorative welt pocket stitching.",
+            img: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=400&q=80",
+            backImg: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=400&q=80"
+          },
+          {
+            num: 3,
+            brand: "LITTLE DREAMS",
+            name: "Black Ballerina Cloud Flats",
+            price: 99.00,
+            badge: "Elastic Arch Band",
+            description: "Classic black dance flat engineered with a rounded toe, elastic criss-cross instep arch strap for slip-free security, and anti-slip rubber grip pods.",
+            frontBadge1: "Rounded Ballet Toe",
+            frontBadge2: "Elastic Arch Band",
+            frontDesc: "Smooth rounded toe box with flexible elastic vamp band across the bridge of the foot.",
+            backBadge1: "Reinforced Heel",
+            backBadge2: "Achilles Cushion",
+            backDesc: "Supportive heel counter with padded pull loop and cushioned collar to prevent rubbing.",
+            img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=400&q=80",
+            backImg: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=400&q=80"
+          }
+        ],
+        bundle: { original: 367.00, discounted: 330.30 }
+      },
+      {
+        id: "02",
+        title: "The Urban Playmaker",
+        gender: "boy", // DYNAMIC BLUE THEME!
+        theme: {
+          bgGradient: "linear-gradient(135deg, #e0f2fe 0%, #c7e6fc 50%, #b2dcf8 100%)",
+          headerBg: "#0c2b4d",
+          textColor: "#082544",
+          taglineColor: "#1e4d7b",
+          doodleColor: "#1d72b8",
+          pedestalTop: "#cbe4f6",
+          pedestalBottom: "#a3cde9",
+          primaryColor: "#0f3a68",
+          secondaryColor: "#1d72b8",
+          buttonBg: "#0f3a68",
+          glow: "rgba(29, 114, 184, 0.32)",
+          pillBg: "bg-sky-400 text-slate-900"
+        },
+        model: {
+          name: "Leo",
+          headline: "Cool Blues. Ready to Play.",
+          subhead: "Fresh street-smart cuts crafted with ultra-soft organic fleece and active stretch.",
+          hotspots: [
+            { id: 1, top: "35%", left: "50%", label: "Cobalt Explorer Jacket" },
+            { id: 2, top: "66%", left: "50%", label: "Indigo Tapered Chinos" },
+            { id: 3, top: "90%", left: "50%", label: "Navy Cloud Runners" }
+          ]
+        },
+        items: [
+          { num: 1, brand: "LITTLE DREAMS", name: "Cobalt Explorer Jacket", price: 139.00, badge: "Wind-Resistant", img: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=300&q=80", frontDesc: "Full front zip with bear patch.", backDesc: "Reflective collar tab and clean back yoke." },
+          { num: 2, brand: "LITTLE DREAMS", name: "Indigo Tapered Chinos", price: 119.00, badge: "Flex Denim", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=300&q=80", frontDesc: "Five pocket styling with stretch denim.", backDesc: "Embroidered arcuate on back pockets." },
+          { num: 3, brand: "LITTLE DREAMS", name: "Navy Cloud Runners", price: 109.00, badge: "Cushion Grip", img: "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80", frontDesc: "Breathable mesh and dual strap.", backDesc: "Moulded rubber heel stability cup." }
+        ],
+        bundle: { original: 367.00, discounted: 330.30 }
+      },
+      {
+        id: "03",
+        title: "The Magenta Bear Edit",
+        gender: "girl",
+        theme: {
+          bgGradient: "linear-gradient(135deg, #fce8f0 0%, #fad4e4 50%, #f7c5d9 100%)",
+          headerBg: "#6d1338",
+          textColor: "#570c29",
+          taglineColor: "#8c2850",
+          doodleColor: "#d9206e",
+          pedestalTop: "#f5d0df",
+          pedestalBottom: "#e8b8cb",
+          primaryColor: "#75153c",
+          secondaryColor: "#d9206e",
+          buttonBg: "#6d1338",
+          glow: "rgba(217, 32, 110, 0.28)",
+          pillBg: "bg-pink-300 text-rose-950"
+        },
+        model: {
+          name: "Emma",
+          headline: "Little Looks. Try the Look.",
+          subhead: "Discover styled looks for little ones, head-to-toe. Select an item to see the piece.",
+          hotspots: [
+            { id: 1, top: "42%", left: "48%", label: "Magenta Bear Hoodie" },
+            { id: 2, top: "72%", left: "45%", label: "Khaki Dream Chinos" },
+            { id: 3, top: "88%", left: "42%", label: "White Cloud Sneakers" }
+          ]
+        },
+        items: [
+          { num: 1, brand: "LITTLE DREAMS", name: "Magenta Bear Hoodie", price: 129.00, badge: "Organic Cotton", img: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=300&q=80", frontDesc: "Kangaroo pocket with teddy patch.", backDesc: "Seamless back panel with ribbed waist." },
+          { num: 2, brand: "LITTLE DREAMS", name: "Khaki Dream Chinos", price: 119.00, badge: "Stretch Twill", img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=300&q=80", frontDesc: "Pleated chino front.", backDesc: "Dual buttoned back welt pockets." },
+          { num: 3, brand: "LITTLE DREAMS", name: "White Cloud Sneakers", price: 99.00, badge: "Easy Velcro", img: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80", frontDesc: "Dual strap closure.", backDesc: "Cushioned collar and heel cup." }
+        ],
+        bundle: { original: 347.00, discounted: 312.30 }
+      },
+      {
+        id: "04",
+        title: "Coastal Mariner",
+        gender: "boy",
+        theme: {
+          bgGradient: "linear-gradient(135deg, #e6f4fe 0%, #cee6f9 50%, #b8dbf6 100%)",
+          headerBg: "#0c2b4d",
+          textColor: "#082544",
+          taglineColor: "#1e4d7b",
+          doodleColor: "#1d72b8",
+          pedestalTop: "#cbe4f6",
+          pedestalBottom: "#a3cde9",
+          primaryColor: "#0f3a68",
+          secondaryColor: "#1d72b8",
+          buttonBg: "#0f3a68",
+          glow: "rgba(29, 114, 184, 0.32)",
+          pillBg: "bg-sky-400 text-slate-900"
+        },
+        model: {
+          name: "Noah",
+          headline: "Seaside Comfort. Ocean Cool.",
+          subhead: "Breton striped boatneck pullovers matched with relaxed nautical twill shorts.",
+          hotspots: [
+            { id: 1, top: "38%", left: "51%", label: "Nautical Striped Knit" },
+            { id: 2, top: "67%", left: "51%", label: "Coastal Twill Bermudas" },
+            { id: 3, top: "89%", left: "51%", label: "Seaside Canvas Deckers" }
+          ]
+        },
+        items: [
+          { num: 1, brand: "LITTLE DREAMS", name: "Nautical Striped Knit", price: 125.00, badge: "100% Breathable", img: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=300&q=80", frontDesc: "Striped cotton knit.", backDesc: "Seamless stripe alignment." },
+          { num: 2, brand: "LITTLE DREAMS", name: "Coastal Twill Bermudas", price: 99.00, badge: "Water Repel", img: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=300&q=80", frontDesc: "Quick-drying twill.", backDesc: "Drainage pocket on rear." },
+          { num: 3, brand: "LITTLE DREAMS", name: "Seaside Canvas Deckers", price: 95.00, badge: "Slip-On Grip", img: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=300&q=80", frontDesc: "Elastic side vents.", backDesc: "Vulcanized rubber heel." }
+        ],
+        bundle: { original: 319.00, discounted: 287.10 }
+      },
+      {
+        id: "05",
+        title: "Sweet Rose Garden",
+        gender: "girl",
+        theme: {
+          bgGradient: "linear-gradient(135deg, #fdf0f5 0%, #fadbe6 50%, #f6cbdb 100%)",
+          headerBg: "#6d1338",
+          textColor: "#570c29",
+          taglineColor: "#8c2850",
+          doodleColor: "#d9206e",
+          pedestalTop: "#f5d0df",
+          pedestalBottom: "#e8b8cb",
+          primaryColor: "#75153c",
+          secondaryColor: "#d9206e",
+          buttonBg: "#6d1338",
+          glow: "rgba(217, 32, 110, 0.28)",
+          pillBg: "bg-pink-300 text-rose-950"
+        },
+        model: {
+          name: "Sophia",
+          headline: "Rosy Days. Made for Smiles.",
+          subhead: "Soft knit cardigans with playful pleated skirts for graceful sunny adventures.",
+          hotspots: [
+            { id: 1, top: "36%", left: "49%", label: "Blush Ribbed Cardigan" },
+            { id: 2, top: "62%", left: "49%", label: "Rose Petal Twirl Skirt" },
+            { id: 3, top: "88%", left: "49%", label: "Ballerina Cloud Flats" }
+          ]
+        },
+        items: [
+          { num: 1, brand: "LITTLE DREAMS", name: "Blush Ribbed Cardigan", price: 115.00, badge: "Merino Blend", img: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=300&q=80", frontDesc: "Pearl buttons and scalloped neck.", backDesc: "Vertical rib knit back." },
+          { num: 2, brand: "LITTLE DREAMS", name: "Rose Petal Twirl Skirt", price: 95.00, badge: "Double Layer", img: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=300&q=80", frontDesc: "Accordion pleats.", backDesc: "Smocked elastic back." },
+          { num: 3, brand: "LITTLE DREAMS", name: "Ballerina Cloud Flats", price: 89.00, badge: "Memory Cushion", img: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=300&q=80", frontDesc: "Instep elastic strap.", backDesc: "Anti-blister heel collar." }
+        ],
+        bundle: { original: 299.00, discounted: 269.10 }
+      },
+      {
+        id: "06",
+        title: "Alpine Cozy Fleece",
+        gender: "boy",
+        theme: {
+          bgGradient: "linear-gradient(135deg, #e3f2fd 0%, #c9e4fb 50%, #b0d8f7 100%)",
+          headerBg: "#0c2b4d",
+          textColor: "#082544",
+          taglineColor: "#1e4d7b",
+          doodleColor: "#1d72b8",
+          pedestalTop: "#cbe4f6",
+          pedestalBottom: "#a3cde9",
+          primaryColor: "#0f3a68",
+          secondaryColor: "#1d72b8",
+          buttonBg: "#0f3a68",
+          glow: "rgba(29, 114, 184, 0.32)",
+          pillBg: "bg-sky-400 text-slate-900"
+        },
+        model: {
+          name: "Ethan",
+          headline: "Glacial Chill. Ultra Warm.",
+          subhead: "High-loft sherpa fleece engineered to keep little adventurers cozy during winter outings.",
+          hotspots: [
+            { id: 1, top: "35%", left: "50%", label: "Arctic Sky Sherpa Pullover" },
+            { id: 2, top: "67%", left: "50%", label: "Charcoal Cargo Joggers" },
+            { id: 3, top: "89%", left: "50%", label: "Glacier Trail Boots" }
+          ]
+        },
+        items: [
+          { num: 1, brand: "LITTLE DREAMS", name: "Arctic Sky Sherpa Pullover", price: 145.00, badge: "Thermal Sherpa", img: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=300&q=80", frontDesc: "Quarter snap collar placket.", backDesc: "Thermal sherpa backing." },
+          { num: 2, brand: "LITTLE DREAMS", name: "Charcoal Cargo Joggers", price: 119.00, badge: "Reinforced Knee", img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?auto=format&fit=crop&w=300&q=80", frontDesc: "Dual cargo flap pockets.", backDesc: "Velcro secure pockets." },
+          { num: 3, brand: "LITTLE DREAMS", name: "Glacier Trail Boots", price: 129.00, badge: "Waterproof Grip", img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=300&q=80", backImg: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=300&q=80", frontDesc: "Speed lacing system.", backDesc: "Lugged cleat outsole." }
+        ],
+        bundle: { original: 393.00, discounted: 353.70 }
+      }
+    ];
+
+    let currentIndex = 0;
+    let isPlaying = true;
+    let progress = 0;
+    let cartCount = 0;
+    let activeHotspot = 1;
+    let isModalOpen = false;
+    let isModalFlipped = false;
+    let currentModalItem = null;
+    let autoInterval = null;
+    const duration = 4500;
+
+    let tiltX = 0;
+    let tiltY = 0;
+    const stageContainer = document.getElementById('stage-container');
+    const carouselTurntable = document.getElementById('carousel-turntable');
+
+    function init() {
+      renderTurntableCards();
+      renderPagination();
+      updateView();
+      startAutoPlay();
+      setupMouseParallax();
+      setupTouchDrag();
+    }
+
+    function renderTurntableCards() {
+      carouselTurntable.innerHTML = '';
+      LOOKS.forEach((look, index) => {
+        const card = document.createElement('div');
+        card.id = `model-card-${index}`;
+        card.className = 'transition-all duration-700 ease-out cursor-pointer flex items-center justify-center';
+        card.style.position = 'absolute';
+        card.style.width = '320px';
+        card.style.height = '420px';
+        card.style.left = 'calc(50% - 160px)';
+        card.style.top = 'calc(50% - 210px)';
+        card.onclick = () => selectLook(index);
+
+        card.innerHTML = `
+          <div class="relative w-full h-full flex flex-col items-center justify-end select-none">
+            <div id="pedestal-${index}" class="absolute bottom-2 w-72 sm:w-80 h-16 rounded-2xl transition-all duration-700 ease-out z-0">
+              <div class="w-full h-2 rounded-t-2xl bg-white/40"></div>
+            </div>
+            <div class="relative z-10 w-64 sm:w-72 h-[380px] sm:h-[410px] flex items-center justify-center">
+              ${getModelSvgMarkup(look)}
+              <div id="hotspot-container-${index}" class="absolute inset-0 pointer-events-none"></div>
+            </div>
+          </div>
+        `;
+
+        carouselTurntable.appendChild(card);
+      });
+    }
+
+    function getModelSvgMarkup(look) {
+      if (look.avatarType === "ballet-girl-photo" || (look.model && look.model.avatarType === "ballet-girl-photo") || look.id === "01") {
+        const imgSrc = (look.model && look.model.image) ? look.model.image : "ballet-girl-look.jpg";
+        return `
+          <div class="relative w-full h-full flex items-center justify-center">
+            <div class="absolute bottom-3 w-44 h-8 rounded-full bg-black/25 filter blur-md -z-10" style="left: 22%;"></div>
+            <img 
+              src="${imgSrc}" 
+              alt="Grace Ballet Look - 2K Studio Edit" 
+              class="w-full h-full object-contain filter drop-shadow-2xl"
+              style="filter: drop-shadow(0 20px 30px rgba(0,0,0,0.25)) contrast(1.04) brightness(1.02);"
+            />
+          </div>
+        `;
+      } else if (look.id === "02") {
+        return `
+          <svg viewBox="0 0 320 440" preserveAspectRatio="xMidYMid meet" class="w-full h-full filter drop-shadow-xl">
+            <path d="M 132 245 L 122 360 C 124 368 144 368 146 360 L 152 245 Z" fill="#1e293b" />
+            <path d="M 168 245 L 174 360 C 176 368 196 368 198 360 L 188 245 Z" fill="#1e293b" />
+            <g>
+              <path d="M 112 360 C 104 360 96 375 102 395 C 112 400 148 400 150 390 C 152 380 142 360 132 360 Z" fill="#0284c7" />
+              <path d="M 102 392 L 150 392" stroke="#ffffff" stroke-width="5" />
+            </g>
+            <g>
+              <path d="M 168 360 C 158 360 148 380 150 390 C 152 400 188 400 198 395 C 204 375 196 360 188 360 Z" fill="#0284c7" />
+              <path d="M 150 392 L 198 392" stroke="#ffffff" stroke-width="5" />
+            </g>
+            <path d="M 115 150 C 95 180 90 220 100 255 C 120 260 200 260 220 255 C 230 220 225 180 205 150 Z" fill="#1d4ed8" />
+            <line x1="160" y1="150" x2="160" y2="255" stroke="#ffffff" stroke-width="3" />
+            <rect x="156" y="170" width="8" height="12" rx="2" fill="#38bdf8" />
+            <circle cx="160" cy="105" r="40" fill="#fcd34d" />
+            <path d="M 120 102 C 118 68 142 50 160 50 C 182 50 202 68 200 102 Z" fill="#5c2d16" />
+            <ellipse cx="136" cy="116" rx="7" ry="4" fill="#38bdf8" opacity="0.3" />
+            <ellipse cx="184" cy="116" rx="7" ry="4" fill="#38bdf8" opacity="0.3" />
+            <circle cx="144" cy="100" r="4" fill="#1e293b" /><circle cx="146" cy="98" r="1.5" fill="#ffffff" />
+            <circle cx="176" cy="100" r="4" fill="#1e293b" /><circle cx="178" cy="98" r="1.5" fill="#ffffff" />
+            <path d="M 148 116 Q 160 130 172 116" stroke="#451a03" stroke-width="3.5" stroke-linecap="round" fill="none" />
+          </svg>
+        `;
+      } else {
+        const isBoy = look.gender === 'boy';
+        return `
+          <svg viewBox="0 0 320 440" preserveAspectRatio="xMidYMid meet" class="w-full h-full filter drop-shadow-xl">
+            <path d="M 120 240 L 115 365 C 118 375 142 375 145 365 L 152 240 Z" fill="${isBoy ? '#1e293b' : '#cbb094'}" />
+            <path d="M 168 240 L 175 365 C 178 375 202 375 205 365 L 200 240 Z" fill="${isBoy ? '#1e293b' : '#cbb094'}" />
+            <ellipse cx="130" cy="380" rx="20" ry="10" fill="${isBoy ? '#0284c7' : '#ffffff'}" />
+            <ellipse cx="190" cy="380" rx="20" ry="10" fill="${isBoy ? '#0284c7' : '#ffffff'}" />
+            <path d="M 115 155 C 95 185 90 220 100 250 C 120 256 200 256 220 250 C 230 220 225 185 205 155 Z" fill="${isBoy ? '#0284c7' : '#ec4899'}" />
+            <circle cx="160" cy="105" r="38" fill="#fcd34d" />
+            <path d="M 120 95 C 120 65 145 52 160 52 C 180 52 200 65 200 95 Z" fill="${isBoy ? '#451a03' : '#d97706'}" />
+            <circle cx="145" cy="102" r="3.5" fill="#1e293b" />
+            <circle cx="175" cy="102" r="3.5" fill="#1e293b" />
+            <path d="M 150 118 Q 160 128 170 118" stroke="#451a03" stroke-width="3" stroke-linecap="round" fill="none" />
+          </svg>
+        `;
+      }
+    }
+
+    function renderPagination() {
+      const container = document.getElementById('pagination-strip');
+      container.innerHTML = '';
+      LOOKS.forEach((look, index) => {
+        const btn = document.createElement('button');
+        btn.id = `page-btn-${index}`;
+        btn.className = 'flex items-center gap-2 group transition-all duration-300 py-1 focus:outline-none';
+        btn.onclick = () => selectLook(index);
+        container.appendChild(btn);
+      });
+    }
+
+    function updateView() {
+      const look = LOOKS[currentIndex];
+      const isBoy = look.gender === 'boy';
+      const theme = look.theme;
+
+      const app = document.getElementById('app');
+      app.style.background = theme.bgGradient;
+
+      const navbar = document.getElementById('navbar');
+      navbar.style.backgroundColor = theme.headerBg;
+
+      const navPill = document.getElementById('nav-mode-pill');
+      navPill.className = `text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider transition-colors duration-500 shadow-sm ${theme.pillBg}`;
+
+      const genderDot = document.getElementById('gender-indicator-dot');
+      genderDot.className = `w-2 h-2 rounded-full animate-ping ${isBoy ? 'bg-cyan-400' : 'bg-pink-400'}`;
+      document.getElementById('gender-pill-text').textContent = isBoy ? 'Boy Edition (Blue Theme)' : 'Studio Edition (2K Detail)';
+
+      const headline = document.getElementById('hero-headline');
+      headline.textContent = look.model.headline;
+      headline.style.color = theme.textColor;
+
+      const subhead = document.getElementById('hero-subhead');
+      subhead.textContent = look.model.subhead;
+      subhead.style.color = theme.taglineColor;
+
+      const glow = document.getElementById('ambient-glow');
+      glow.style.background = isBoy 
+        ? 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(29, 114, 184, 0.1) 70%, transparent 100%)'
+        : 'radial-gradient(circle, rgba(244, 114, 182, 0.45) 0%, rgba(217, 32, 110, 0.1) 70%, transparent 100%)';
+
+      const groundShadow = document.getElementById('ground-shadow');
+      groundShadow.style.background = isBoy
+        ? 'radial-gradient(ellipse at center, rgba(14, 116, 144, 0.35) 0%, rgba(2, 132, 199, 0.1) 60%, transparent 80%)'
+        : 'radial-gradient(ellipse at center, rgba(190, 24, 93, 0.35) 0%, rgba(219, 39, 119, 0.1) 60%, transparent 80%)';
+
+      ['cloud-tr', 'cloud-tr-inner', 'cloud-ml', 'star-1', 'star-2', 'sparkle-1', 'sparkle-2', 'sparkle-3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('stroke', theme.doodleColor);
+      });
+
+      const airplane = document.getElementById('boy-airplane');
+      const butterfly = document.getElementById('girl-butterfly');
+      if (isBoy) {
+        airplane.classList.remove('hidden');
+        butterfly.classList.add('hidden');
+      } else {
+        airplane.classList.add('hidden');
+        butterfly.classList.remove('hidden');
+      }
+
+      const total = LOOKS.length;
+      const radius = 380;
+
+      LOOKS.forEach((l, index) => {
+        let offset = index - currentIndex;
+        if (offset > total / 2) offset -= total;
+        if (offset < -total / 2) offset += total;
+
+        const angle = offset * (360 / total);
+        const isActive = offset === 0;
+        const isNeighbor = Math.abs(offset) === 1;
+
+        const card = document.getElementById(`model-card-${index}`);
+        const opacity = isActive ? 1 : isNeighbor ? 0.65 : 0.25;
+        const blur = isActive ? '0px' : isNeighbor ? '1.5px' : '4px';
+        const scale = isActive ? 1.05 : isNeighbor ? 0.82 : 0.65;
+        const zIndex = isActive ? 40 : 20 - Math.abs(offset);
+
+        card.style.transformStyle = 'preserve-3d';
+        card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px) scale(${scale})`;
+        card.style.opacity = opacity;
+        card.style.filter = `blur(${blur})`;
+        card.style.zIndex = zIndex;
+
+        const pedestal = document.getElementById(`pedestal-${index}`);
+        pedestal.style.background = `linear-gradient(to bottom, ${l.theme.pedestalTop}, ${l.theme.pedestalBottom})`;
+        pedestal.style.boxShadow = isActive 
+          ? `0 24px 45px -8px ${l.theme.glow}, 0 8px 18px rgba(0,0,0,0.12), inset 0 2px 4px rgba(255,255,255,0.7)` 
+          : '0 12px 24px rgba(0,0,0,0.08)';
+
+        const hotspotContainer = document.getElementById(`hotspot-container-${index}`);
+        hotspotContainer.innerHTML = '';
+        if (isActive) {
+          hotspotContainer.className = 'absolute inset-0 pointer-events-auto';
+          l.model.hotspots.forEach(spot => {
+            const isSelected = activeHotspot === spot.id;
+            const btn = document.createElement('button');
+            btn.style.top = spot.top;
+            btn.style.left = spot.left;
+            btn.className = 'absolute -translate-x-1/2 -translate-y-1/2 group z-30 transition-all duration-300 focus:outline-none';
+            btn.title = `${spot.label} — Click to inspect Front & Back in 3D`;
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              selectHotspot(spot.id);
+              openItemInspector(spot.id);
+            };
+
+            btn.innerHTML = `
+              <div class="relative flex items-center justify-center">
+                <span class="absolute w-8 h-8 rounded-full opacity-75 animate-ping" style="background-color: ${l.theme.secondaryColor}"></span>
+                <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white shadow-xl transition-all duration-300 ${isSelected ? 'scale-125 ring-4 ring-white' : 'group-hover:scale-110'}" style="background-color: ${l.theme.primaryColor}; box-shadow: 0 4px 14px ${l.theme.glow}">
+                  ${spot.id}
+                </span>
+                <div class="absolute bottom-full mb-2.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-white whitespace-nowrap shadow-2xl transition-all duration-200 flex items-center gap-1.5 ${isSelected ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0'}" style="background-color: ${l.theme.primaryColor}">
+                  <span>${spot.label}</span>
+                  <span class="px-1.5 py-0.2 rounded bg-white/20 text-[10px] font-extrabold uppercase">3D ↺</span>
+                </div>
+              </div>
+            `;
+            hotspotContainer.appendChild(btn);
+          });
+        }
+      });
+
+      document.getElementById('sidebar-accent-dot').className = `inline-block w-2 h-2 rounded-full ${isBoy ? 'bg-sky-500' : 'bg-pink-500'}`;
+      document.getElementById('sidebar-look-tag').textContent = `Look ${look.id} • ${look.title}`;
+
+      const crown = document.getElementById('crown-doodle');
+      crown.setAttribute('stroke', theme.doodleColor);
+      ['crown-dot-1', 'crown-dot-2', 'crown-dot-3'].forEach(id => {
+        document.getElementById(id).setAttribute('fill', theme.doodleColor);
+      });
+      document.getElementById('heart-doodle').setAttribute('stroke', theme.doodleColor);
+
+      const prodList = document.getElementById('product-list');
+      prodList.innerHTML = '';
+      look.items.forEach(item => {
+        const isHighlighted = activeHotspot === item.num;
+        const card = document.createElement('div');
+        card.className = `relative group p-3 rounded-2xl flex items-center justify-between border transition-all duration-300 cursor-pointer ${
+          isHighlighted ? 'bg-slate-50 border-slate-300 shadow-md ring-2' : 'bg-white/70 hover:bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm'
+        }`;
+        card.style.ringColor = isHighlighted ? theme.primaryColor : 'transparent';
+        card.onmouseenter = () => selectHotspot(item.num);
+        card.onclick = () => {
+          selectHotspot(item.num);
+          openItemInspector(item.num);
+        };
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200/80 flex-shrink-0">
+              <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <span class="absolute top-1 left-1 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center text-white shadow-sm" style="background-color: ${theme.primaryColor}">
+                ${item.num}
+              </span>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">${item.brand}</span>
+              <h3 class="text-xs sm:text-sm font-bold text-slate-800 leading-snug group-hover:text-slate-900 flex items-center gap-1.5">
+                <span>${item.name}</span>
+                <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity font-normal">(3D ↺)</span>
+              </h3>
+              <div class="flex items-center gap-2 mt-0.5 sm:mt-1">
+                <span class="text-xs sm:text-sm font-semibold text-slate-700">$${item.price.toFixed(2)}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-medium">${item.badge}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button onclick="event.stopPropagation(); openItemInspector(${item.num})" title="View Front & Back in 3D" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all text-xs">
+              ↺
+            </button>
+            <button onclick="event.stopPropagation(); addToBag('${item.name}', ${item.price})" aria-label="Add to bag" class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-500 hover:text-white transition-all duration-200 flex-shrink-0" style="background-color: transparent" onmouseenter="this.style.backgroundColor='${theme.primaryColor}'" onmouseleave="this.style.backgroundColor='transparent'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        `;
+        prodList.appendChild(card);
+      });
+
+      document.getElementById('bundle-orig-price').textContent = `$${look.bundle.original.toFixed(2)}`;
+      document.getElementById('bundle-final-price').textContent = `$${look.bundle.discounted.toFixed(2)}`;
+      const ctaBtn = document.getElementById('btn-add-bundle');
+      ctaBtn.style.backgroundColor = theme.buttonBg;
+      ctaBtn.style.boxShadow = `0 10px 25px -5px ${theme.glow}`;
+
+      LOOKS.forEach((l, index) => {
+        const btn = document.getElementById(`page-btn-${index}`);
+        const isActive = index === currentIndex;
+        btn.innerHTML = `
+          <span class="text-xs font-bold transition-all duration-300 ${isActive ? 'opacity-100 scale-110' : 'opacity-40 group-hover:opacity-75'}" style="color: ${isActive ? theme.primaryColor : '#475569'}">
+            ${l.id}
+          </span>
+          ${isActive ? `<span class="hidden sm:inline text-xs font-semibold tracking-wide whitespace-nowrap transition-all duration-300" style="color: ${theme.primaryColor}">${l.title}</span>` : ''}
+        `;
+      });
+
+      document.getElementById('progress-bar').style.backgroundColor = theme.primaryColor;
+      document.getElementById('btn-prev').style.borderColor = theme.primaryColor;
+      document.getElementById('btn-next').style.borderColor = theme.primaryColor;
+      document.getElementById('btn-toggle-play').style.borderColor = theme.primaryColor;
+      document.getElementById('btn-toggle-play').style.color = isPlaying ? theme.primaryColor : '#ffffff';
+      document.getElementById('btn-toggle-play').style.backgroundColor = isPlaying ? 'transparent' : theme.primaryColor;
+    }
+
+    function openItemInspector(itemNum) {
+      const look = LOOKS[currentIndex];
+      const item = look.items.find(i => i.num === itemNum) || look.items[0];
+      currentModalItem = item;
+      isModalOpen = true;
+      isModalFlipped = false;
+
+      document.getElementById('modal-title').textContent = item.name;
+      document.getElementById('modal-price').textContent = `$${item.price.toFixed(2)}`;
+      document.getElementById('modal-desc').textContent = item.description || "Designed with soft premium fabrics tailored for comfort, movement, and durability for growing little dreamers.";
+      document.getElementById('modal-detail-front').textContent = item.frontDesc || "Front styling with clean seams and signature accents.";
+      document.getElementById('modal-detail-back').textContent = item.backDesc || "Tailored rear construction and comfort waistband details.";
+
+      document.getElementById('modal-badge-f1').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>${item.frontBadge1 || 'Front Silhouette'}`;
+      document.getElementById('modal-badge-f2').textContent = item.frontBadge2 || 'Comfort Cut';
+      document.getElementById('modal-badge-b1').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>${item.backBadge1 || 'Back Tailoring'}`;
+      document.getElementById('modal-badge-b2').textContent = item.backBadge2 || 'Comfort Band';
+
+      document.getElementById('modal-img-front').innerHTML = `<img src="${item.img}" alt="${item.name} Front" class="w-full h-full object-contain filter drop-shadow-md" />`;
+      document.getElementById('modal-img-back').innerHTML = `<img src="${item.backImg || item.img}" alt="${item.name} Back" class="w-full h-full object-contain filter drop-shadow-md scale-x-[-1]" />`;
+
+      const addBtn = document.getElementById('modal-add-btn');
+      addBtn.style.backgroundColor = look.theme.buttonBg;
+      document.getElementById('modal-add-label').textContent = `Add to Bag • $${item.price.toFixed(2)} (Size 6Y)`;
+
+      updateModalFlipState();
+      document.getElementById('item-modal').classList.remove('hidden');
+    }
+
+    function closeItemInspector() {
+      isModalOpen = false;
+      document.getElementById('item-modal').classList.add('hidden');
+    }
+
+    function toggleModalFlip() {
+      isModalFlipped = !isModalFlipped;
+      updateModalFlipState();
+    }
+
+    function flipModalCard(toBack) {
+      isModalFlipped = toBack;
+      updateModalFlipState();
+    }
+
+    function updateModalFlipState() {
+      const card = document.getElementById('modal-flip-inner');
+      card.style.transform = `rotateY(${isModalFlipped ? 180 : 0}deg)`;
+
+      const tabFront = document.getElementById('modal-tab-front');
+      const tabBack = document.getElementById('modal-tab-back');
+      if (isModalFlipped) {
+        tabBack.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white shadow';
+        tabFront.className = 'px-3 py-1 rounded-full text-xs font-bold text-slate-500 hover:text-slate-900';
+        document.getElementById('modal-flip-btn-label').textContent = 'Flip to View Front';
+      } else {
+        tabFront.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white shadow';
+        tabBack.className = 'px-3 py-1 rounded-full text-xs font-bold text-slate-500 hover:text-slate-900';
+        document.getElementById('modal-flip-btn-label').textContent = 'Flip to View Back (Click to Rotate)';
+      }
+    }
+
+    function addModalItemToBag() {
+      if (currentModalItem) {
+        addToBag(currentModalItem.name, currentModalItem.price);
+        closeItemInspector();
+      }
+    }
+
+    function startAutoPlay() {
+      if (autoInterval) clearInterval(autoInterval);
+      const stepMs = 50;
+      autoInterval = setInterval(() => {
+        if (!isPlaying || isModalOpen) return;
+        progress += (stepMs / duration) * 100;
+        if (progress >= 100) {
+          progress = 0;
+          currentIndex = (currentIndex + 1) % LOOKS.length;
+          activeHotspot = 1;
+          updateView();
+        }
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+      }, stepMs);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('play-icon-pause').classList.toggle('hidden', !isPlaying);
+      document.getElementById('play-icon-play').classList.toggle('hidden', isPlaying);
+      document.getElementById('play-label').textContent = isPlaying ? 'Auto-spinning' : 'Play';
+      const look = LOOKS[currentIndex];
+      document.getElementById('btn-toggle-play').style.backgroundColor = isPlaying ? 'transparent' : look.theme.primaryColor;
+      document.getElementById('btn-toggle-play').style.color = isPlaying ? look.theme.primaryColor : '#ffffff';
+    }
+
+    function nextLook() {
+      currentIndex = (currentIndex + 1) % LOOKS.length;
+      progress = 0;
+      activeHotspot = 1;
+      updateView();
+    }
+
+    function prevLook() {
+      currentIndex = (currentIndex - 1 + LOOKS.length) % LOOKS.length;
+      progress = 0;
+      activeHotspot = 1;
+      updateView();
+    }
+
+    function selectLook(index) {
+      currentIndex = index;
+      progress = 0;
+      activeHotspot = 1;
+      updateView();
+    }
+
+    function resetToFirstLook() {
+      selectLook(0);
+    }
+
+    function selectHotspot(num) {
+      activeHotspot = num;
+      updateView();
+    }
+
+    function setupMouseParallax() {
+      stageContainer.addEventListener('mousemove', (e) => {
+        const rect = stageContainer.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        tiltX = -y * 8;
+        tiltY = x * 14;
+        carouselTurntable.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+      });
+
+      stageContainer.addEventListener('mouseleave', () => {
+        tiltX = 0;
+        tiltY = 0;
+        carouselTurntable.style.transform = `rotateX(0deg) rotateY(0deg)`;
+      });
+    }
+
+    function setupTouchDrag() {
+      let startX = 0;
+      stageContainer.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+      }, { passive: true });
+
+      stageContainer.addEventListener('touchend', (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = endX - startX;
+        if (diff > 40) prevLook();
+        else if (diff < -40) nextLook();
+      }, { passive: true });
+    }
+
+    function addToBag(name, price) {
+      cartCount++;
+      updateCartBadge();
+      showToast(`Added ${name} ($${price.toFixed(2)}) to bag!`);
+    }
+
+    function addFullLookToBag() {
+      const look = LOOKS[currentIndex];
+      cartCount += 3;
+      updateCartBadge();
+      const saved = (look.bundle.original - look.bundle.discounted).toFixed(2);
+      showToast(`Added complete 3-piece ${look.title} to bag! Saved $${saved} 🎉`);
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById('cart-badge');
+      const look = LOOKS[currentIndex];
+      badge.textContent = cartCount;
+      badge.classList.remove('hidden');
+      badge.className = `absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg animate-bounce ${
+        look.gender === 'boy' ? 'bg-cyan-400 text-slate-950' : 'bg-amber-300 text-rose-950'
+      }`;
+    }
+
+    function openCartToast() {
+      showToast(`Your Bag contains ${cartCount} item${cartCount === 1 ? '' : 's'}`);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      const look = LOOKS[currentIndex];
+      toastText.textContent = msg;
+      toast.style.border = `1.5px solid ${look.theme.secondaryColor}`;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      }, 3000);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
